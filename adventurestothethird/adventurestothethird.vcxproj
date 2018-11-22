@@ -85,10 +85,17 @@
   <ItemGroup>
     <ClCompile Include="src\glad\glad.c" />
     <ClCompile Include="src\Main.cpp" />
+    <ClCompile Include="src\VertexBufferLayout.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\cube.frag.glsl" />
     <None Include="res\shaders\cube.vert.glsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Cube.h" />
+    <ClInclude Include="src\Shader.h" />
+    <ClInclude Include="src\VertexBufferElement.h" />
+    <ClInclude Include="src\VertexBufferLayout.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

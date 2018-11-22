@@ -5,7 +5,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-void CreateShaderProgram(unsigned int& programIdOut);
+#include "Shader.h"
 
 int main(int argc, char** argv)
 {
@@ -28,7 +28,7 @@ int main(int argc, char** argv)
 
 	unsigned int shaderProgram;
 
-	CreateShaderProgram(shaderProgram);
+	Shader shader("res/shaders/cube.vert.glsl", "res/shaders/cube.frag.glsl");
 
 	float data[] = {
 		-0.8f, -0.8f, 0.0f, 1.0f, 0.0f, 0.0f,
@@ -79,7 +79,7 @@ int main(int argc, char** argv)
 		/* Render here */
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glUseProgram(shaderProgram);
+		shader.use();
 		glBindVertexArray(vao[0]);
 		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
 		glBindVertexArray(vao[1]);
@@ -94,62 +94,4 @@ int main(int argc, char** argv)
 
 	glfwTerminate();
 	return 0;
-}
-
-void CreateShaderProgram(unsigned int& programIdOut)
-{
-	std::string vertex;
-	std::string fragment;
-
-	std::ifstream vertexFile("res/shaders/cube.vert.glsl");
-	std::ifstream fragmentFile("res/shaders/cube.frag.glsl");
-
-	vertexFile.seekg(0, std::ios::end);
-	vertex.resize(vertexFile.tellg());
-	vertexFile.seekg(0);
-	vertexFile.read(vertex.data(), vertex.size());
-
-	fragmentFile.seekg(0, std::ios::end);
-	fragment.resize(fragmentFile.tellg());
-	fragmentFile.seekg(0);
-	fragmentFile.read(fragment.data(), fragment.size());
-
-	unsigned int vertexShaderId = glCreateShader(GL_VERTEX_SHADER);
-	const char* vertexSource = vertex.c_str();
-	glShaderSource(vertexShaderId, 1, &vertexSource, nullptr);
-	glCompileShader(vertexShaderId);
-
-	int result;
-	glGetShaderiv(vertexShaderId, GL_COMPILE_STATUS, &result);
-	if (!result)
-	{
-		char log[512];
-		glGetShaderInfoLog(vertexShaderId, 512, nullptr, log);
-		std::cout << "Vertex shader error: " << log << std::endl;
-	}
-
-	unsigned int fragmentShaderId = glCreateShader(GL_FRAGMENT_SHADER);
-	const char* fragmentSource = fragment.c_str();
-	glShaderSource(fragmentShaderId, 1, &fragmentSource, nullptr);
-	glCompileShader(fragmentShaderId);
-	glGetShaderiv(fragmentShaderId, GL_COMPILE_STATUS, &result);
-	if (!result)
-	{
-		char log[512];
-		glGetShaderInfoLog(fragmentShaderId, 512, nullptr, log);
-		std::cout << "Fragment shader error: " << log << std::endl;
-	}
-
-	programIdOut = glCreateProgram();
-	glAttachShader(programIdOut, vertexShaderId);
-	glAttachShader(programIdOut, fragmentShaderId);
-	glLinkProgram(programIdOut);
-
-	glGetProgramiv(programIdOut, GL_LINK_STATUS, &result);
-	if (!result)
-	{
-		char log[512];
-		glGetProgramInfoLog(programIdOut, 512, nullptr, log);
-		std::cout << "Shader program error: " << log << std::endl;
-	}
 }
