@@ -1,5 +1,8 @@
 #include "Shader.h"
 
+#include <fstream>
+#include <iostream>
+
 Shader::Shader(const std::string& vertexFile, const std::string& fragmentFile)
 {
 	std::string vertex = ReadFileContents(vertexFile);

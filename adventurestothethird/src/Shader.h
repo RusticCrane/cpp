@@ -11,6 +11,11 @@ public:
 
 	void use();
 
+	unsigned int getId() const
+	{
+		return m_id;
+	}
+
 private:
 	unsigned int m_id;
 
