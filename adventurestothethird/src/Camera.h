@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
-#define SPEED 1.0f
+#define SPEED 0.6f
 
 class Camera
 {
@@ -60,6 +60,14 @@ public:
 		const float MOUSE_SPEED = 0.25f;
 		m_yaw -= mouseX * MOUSE_SPEED;
 		m_pitch += mouseY * MOUSE_SPEED;
+		if (m_pitch > 89.0f)
+		{
+			m_pitch = 89.0f;
+		}
+		else if (m_pitch < -89.0f)
+		{
+			m_pitch = -89.0f;
+		}
 	}
 
 	glm::vec3& position()
