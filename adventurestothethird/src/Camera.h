@@ -8,82 +8,29 @@
 class Camera
 {
 public:
-	Camera() : m_position(glm::vec3(0.0f)), m_roll(0.0f), m_yaw(0.0f), m_pitch(0.0f)
-	{
-	}
+	Camera();
 
-	glm::mat4 viewMatrix()
-	{
-		float pitch = glm::radians(m_pitch);
-		float yaw = glm::radians(m_yaw);
-		m_front.x = glm::cos(glm::radians(m_pitch)) * glm::cos(glm::radians(m_yaw));
-		m_front.y = glm::sin(glm::radians(m_pitch));
-		m_front.z = glm::cos(glm::radians(m_pitch)) * glm::sin(glm::radians(m_yaw));
-		m_front = glm::normalize(m_front);
+	glm::mat4 viewMatrix();
 
-		m_right = glm::normalize(glm::cross(m_front, glm::vec3(0.0f, 1.0f, 0.0f)));  // Normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
-		m_up = glm::normalize(glm::cross(m_right, m_front));
-		return glm::lookAt(m_position, m_position + m_front, glm::vec3(0.0f, 1.0f, 0.0f));
-	}
+	void moveUp();
 
-	void moveUp()
-	{
-		m_position.y += SPEED;
-	}
+	void moveDown();
 
-	void moveDown()
-	{
-		m_position.y -= SPEED;
-	}
+	void moveRight();
 
-	void moveRight()
-	{
-		m_position += m_right * SPEED;
-	}
-	void moveLeft()
-	{
-		m_position -= m_right * SPEED;
-	}
+	void moveLeft();
 
-	void moveForward()
-	{
-		m_position += m_front * SPEED;
-	}
+	void moveForward();
 
-	void moveBackwards()
-	{
-		m_position -= m_front * SPEED;
-	}
+	void moveBackwards();
 
-	void mouse(float mouseX, float mouseY)
-	{
-		const float MOUSE_SPEED = 0.25f;
-		m_yaw -= mouseX * MOUSE_SPEED;
-		m_pitch += mouseY * MOUSE_SPEED;
-		if (m_pitch > 89.0f)
-		{
-			m_pitch = 89.0f;
-		}
-		else if (m_pitch < -89.0f)
-		{
-			m_pitch = -89.0f;
-		}
-	}
+	void mouse(float mouseX, float mouseY);
 
-	glm::vec3& position()
-	{
-		return m_position;
-	}
+	glm::vec3& position();
 
-	float& yaw()
-	{
-		return m_yaw;
-	}
+	float& yaw();
 
-	float& pitch()
-	{
-		return m_pitch;
-	}
+	float& pitch();
 
 private:
 	glm::vec3 m_position;
