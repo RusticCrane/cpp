@@ -15,7 +15,7 @@
 #include "Camera.h"
 
 #define WORLD_WIDTH 32
-#define WORLD_HEIGHT 24
+#define WORLD_HEIGHT 32
 
 static constexpr float vertices[] = {
 	-0.5f, -0.5f, 0.5f, // FRONT BOTTOM LEFT
@@ -112,14 +112,12 @@ int main(int argc, char** argv)
 
 	glm::mat4 model(1.0f);
 	float rotation = 0.0f;
-	//model = glm::translate(model, glm::vec3(0.2f, 0.2f, 0.0f));
 
 
 	Camera cam;
 	cam.position().x = 16.0f;
 	cam.position().y = 20.0f;
 	cam.position().z = 16.0f;
-	//glm::mat4 view = glm::lookAt(glm::vec3(5.0f, 20.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 	glm::mat4 projection = glm::perspective(45.0f, 800.0f / 600.0f, 0.01f, 100.0f);
 
@@ -142,11 +140,6 @@ int main(int argc, char** argv)
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
-	//unsigned int ibo;
-	//glGenBuffers(1, &ibo);
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
 	int width, height;
 	unsigned char* data = stbi_load("res/textures/grass.png", &width, &height, nullptr, 4);
 
@@ -161,24 +154,17 @@ int main(int argc, char** argv)
 
 	bool terrain[WORLD_WIDTH][WORLD_HEIGHT][WORLD_WIDTH];
 
-	const siv::PerlinNoise perlin(24);
+	const siv::PerlinNoise perlin(
+		std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::system_clock::now().time_since_epoch()).count());
 
 	for (int x = 0; x < WORLD_WIDTH; ++x)
 	{
 		for (int z = 0; z < WORLD_WIDTH; ++z)
 		{
-			int height = static_cast<int>(perlin.noise0_1(x / (WORLD_WIDTH + 1.0f) * 2.3f,
-			                                              z / (WORLD_WIDTH + 1.0f) * 2.3f) * WORLD_HEIGHT);
 			for (int y = 0; y < WORLD_HEIGHT; ++y)
 			{
-				if (y < height)
-				{
-					terrain[x][y][z] = true;
-				}
-				else
-				{
-					terrain[x][y][z] = false;
-				}
+				terrain[x][y][z] = perlin.noise0_1(x / (WORLD_WIDTH + 1.0f), y / (WORLD_HEIGHT + 1.0f),
+				                                   z / (WORLD_WIDTH + 1.0f)) > 0.5f;
 			}
 		}
 	}
@@ -231,7 +217,8 @@ int main(int argc, char** argv)
 
 		shader.use();
 		glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(cam.viewMatrix()));
-		glUniform3f(glGetUniformLocation(shader.getId(), "viewPos"), cam.position().x, cam.position().y, cam.position().z);
+		glUniform3f(glGetUniformLocation(shader.getId(), "viewPos"), cam.position().x, cam.position().y,
+		            cam.position().z);
 
 		/* Render here */
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -253,9 +240,6 @@ int main(int argc, char** argv)
 				}
 			}
 		}
-		//model = glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
-		//glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
-		//glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
 
 		/* Swap front and back buffers */
 		glfwSwapBuffers(window);
