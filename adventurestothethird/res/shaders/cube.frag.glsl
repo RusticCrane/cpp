@@ -1,13 +1,13 @@
 #version 330 core
 
 in vec3 normal;
-in vec2 texPos;
+//in vec2 texPos;
 
 in vec3 fragPos;
 
 out vec4 fragCol;
 
-uniform sampler2D tex;
+//uniform sampler2D tex;
 
 uniform vec3 viewPos;
 
@@ -31,5 +31,5 @@ void main()
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
 	vec4 specular = specularStrength * spec * lightColor;
 
-	fragCol = (ambient + diffuse + specular) * texture(tex, texPos);
+	fragCol = (ambient + diffuse + specular) * vec4(1.0, 0.2, 0.2, 0.0); // * texture(tex, texPos);
 }
