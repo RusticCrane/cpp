@@ -8,36 +8,36 @@
 class Camera
 {
 public:
-	Camera();
+    Camera();
 
-	glm::mat4 viewMatrix();
+    glm::mat4 viewMatrix();
 
-	void moveUp();
+    void moveUp();
 
-	void moveDown();
+    void moveDown();
 
-	void moveRight();
+    void moveRight();
 
-	void moveLeft();
+    void moveLeft();
 
-	void moveForward();
+    void moveForward();
 
-	void moveBackwards();
+    void moveBackwards();
 
-	void mouse(float mouseX, float mouseY);
+    void mouse(float mouseX, float mouseY);
 
-	glm::vec3& position();
+    glm::vec3& position();
 
-	float& yaw();
+    float& yaw();
 
-	float& pitch();
+    float& pitch();
 
 private:
-	glm::vec3 m_position;
-	glm::vec3 m_right;
-	glm::vec3 m_up;
-	glm::vec3 m_front;
-	float m_roll;
-	float m_yaw; // left / right
-	float m_pitch; // up / down
+    glm::vec3 m_position;
+    glm::vec3 m_right;
+    glm::vec3 m_up;
+    glm::vec3 m_front;
+    float m_roll;
+    float m_yaw; // left / right
+    float m_pitch; // up / down
 };

@@ -6,8 +6,8 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include "VertexArray.h"
+#include "Texture.h"
 
 #define CHUNK_SIZE 32
 
@@ -169,34 +169,20 @@ public:
         }
         m_count = vertices.size();
 
-        unsigned int vao;
-        glGenVertexArrays(1, &vao);
-        glBindVertexArray(vao);
+        VertexBuffer vb(vertices.data(), vertices.size() * sizeof(float));
 
-        unsigned int vbo;
-        glGenBuffers(1, &vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), nullptr);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*) (3 * sizeof(float)));
-        glEnableVertexAttribArray(1);
+        VertexBufferLayout layout;
+        layout.Push<float>(3);
+        layout.Push<float>(3);
 
-        int width, height;
-        unsigned char* data = stbi_load("res/textures/grass.png", &width, &height, nullptr, 4);
+        m_va.AddBuffer(vb, layout);
 
-        unsigned int tex;
-        glGenTextures(1, &tex);
-        glBindTexture(GL_TEXTURE_2D, tex);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glActiveTexture(GL_TEXTURE0);
-        // TERRAIN START
+		Texture texture("res/textures/grass.png");
     }
 
     void render(unsigned int shader)
     {
+        m_va.Bind();
         glUseProgram(shader);
         glm::mat4 model(1.0f);
         glUniformMatrix4fv(glGetUniformLocation(shader, "model"), 1, GL_FALSE, glm::value_ptr(model));
@@ -207,4 +193,5 @@ public:
 private:
     bool m_blocks[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
     unsigned int m_count;
+    VertexArray m_va;
 };

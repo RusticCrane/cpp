@@ -7,21 +7,21 @@
 class Shader
 {
 public:
-	Shader(const std::string& vertexFile, const std::string& fragmentFile);
+    Shader(const std::string& vertexFile, const std::string& fragmentFile);
 
-	void use();
+    void use();
 
-	unsigned int getId() const
-	{
-		return m_id;
-	}
+    unsigned int getId()
+    {
+        return m_id;
+    }
 
 private:
-	unsigned int m_id;
+    unsigned int m_id;
 
-	std::string ReadFileContents(const std::string& path);
+    std::string ReadFileContents(const std::string& path);
 
-	unsigned int CompileShader(const char* source, GLenum type);
+    unsigned int CompileShader(const char* source, GLenum type);
 
-	unsigned int LinkProgram(unsigned int vertexShaderId, unsigned int fragmentShaderId);
+    unsigned int LinkProgram(unsigned int vertexShaderId, unsigned int fragmentShaderId);
 };
