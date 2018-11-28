@@ -1,13 +1,14 @@
 #pragma once
 
 #include <chrono>
-#include <PerlinNoise/PerlinNoise.hpp>
+#include "FastNoise/FastNoise.h"
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #include "VertexArray.h"
-#include "Texture.h"
+
+#include <array>
 
 #define CHUNK_SIZE 32
 
@@ -59,9 +60,11 @@ static constexpr float cubeVertices[] = {
 class Chunk
 {
 public:
-    Chunk()
+    void GenerateChunk(int xOff, int yOff, int zOff)
     {
-        const siv::PerlinNoise perlin(5);
+        FastNoise noise(24);
+        noise.SetNoiseType(FastNoise::Perlin);
+        noise.SetFrequency(0.05f);
 
         for (int x = 0; x < CHUNK_SIZE; ++x)
         {
@@ -69,12 +72,19 @@ public:
             {
                 for (int z = 0; z < CHUNK_SIZE; ++z)
                 {
-                    m_blocks[x][y][z] = perlin.noise0_1(x / (CHUNK_SIZE + 1.0f), y / (CHUNK_SIZE + 1.0f),
-                                                        z / (CHUNK_SIZE + 1.0f)) > 0.5f;
+                    double k = static_cast<double>(CHUNK_SIZE) - y;
+                    k /= CHUNK_SIZE;
+                    k *= 1.2;
+                    double v = 0.6 - k;
+                    m_blocks[x][y][z] = noise.GetNoise(x + xOff * CHUNK_SIZE, y + yOff * CHUNK_SIZE,
+                                                       z + zOff * CHUNK_SIZE) > v;
                 }
             }
         }
+    }
 
+    std::pair<VertexArray, int> CreateChunkMesh()
+    {
         std::vector<float> vertices;
 
         for (int x = 0; x < CHUNK_SIZE; ++x)
@@ -169,29 +179,49 @@ public:
         }
         m_count = vertices.size();
 
+        VertexArray va;
+
         VertexBuffer vb(vertices.data(), vertices.size() * sizeof(float));
 
         VertexBufferLayout layout;
         layout.Push<float>(3);
         layout.Push<float>(3);
 
-        m_va.AddBuffer(vb, layout);
+        va.AddBuffer(vb, layout);
+        return std::pair<VertexArray, int>(va, m_count);
+    }
 
-		Texture texture("res/textures/grass.png");
+    Chunk()
+    {
+        for (int x = 0; x < 5; ++x)
+        {
+            for (int z = 0; z < 5; ++z)
+            {
+                GenerateChunk(x, 0, z);
+                m_vas.at(x).at(z) = CreateChunkMesh();
+            }
+        }
     }
 
     void render(unsigned int shader)
     {
-        m_va.Bind();
         glUseProgram(shader);
-        glm::mat4 model(1.0f);
-        glUniformMatrix4fv(glGetUniformLocation(shader, "model"), 1, GL_FALSE, glm::value_ptr(model));
-        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        glDrawArrays(GL_TRIANGLES, 0, m_count);
+        int loc = glGetUniformLocation(shader, "model");
+        for (int i = 0; i < 5; ++i)
+        {
+            for (int j = 0; j < 5; ++j)
+            {
+                m_vas.at(i).at(j).first.Bind();
+                glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(CHUNK_SIZE * i, 0.0f, CHUNK_SIZE * j));
+
+                glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(model));
+                glDrawArrays(GL_TRIANGLES, 0, m_vas.at(i).at(j).second);
+            }
+        }
     }
 
 private:
     bool m_blocks[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
     unsigned int m_count;
-    VertexArray m_va;
+    std::array<std::array<std::pair<VertexArray, int>, 5>, 5> m_vas;
 };

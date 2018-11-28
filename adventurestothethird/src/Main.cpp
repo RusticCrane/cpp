@@ -46,7 +46,7 @@ int main(int argc, char** argv)
 
     glm::mat4 projection = glm::perspective(45.0f, 800.0f / 600.0f, 0.01f, 400.0f);
 
-    shader.use();
+    shader.Use();
 
     glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
 
@@ -111,7 +111,7 @@ int main(int argc, char** argv)
             cam.moveBackwards();
         }
 
-        shader.use();
+        shader.Use();
         glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(cam.viewMatrix()));
         glUniform3f(glGetUniformLocation(shader.getId(), "viewPos"), cam.position().x, cam.position().y,
                     cam.position().z);

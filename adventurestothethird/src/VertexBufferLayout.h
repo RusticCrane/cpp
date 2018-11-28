@@ -4,23 +4,7 @@
 
 #include <glad/glad.h>
 
-class VertexBufferElement
-{
-public:
-    unsigned int type;
-    unsigned int count;
-
-    static size_t SizeOfType(unsigned int type)
-    {
-        switch (type)
-        {
-            case GL_FLOAT:
-                return sizeof(float);
-            default:
-				throw std::exception("Unknown type");
-        }
-    }
-};
+#include "VertexBufferElement.h"
 
 class VertexBufferLayout
 {
@@ -35,20 +19,12 @@ public:
     void Push<float>(unsigned int amount)
     {
         m_elements.push_back({ GL_FLOAT, amount });
-		m_stride += amount * VertexBufferElement::SizeOfType(GL_FLOAT);
+        m_stride += amount * VertexBufferElement::SizeOfType(GL_FLOAT);
     }
 
-    auto& GetElements() const
-    {
-		return m_elements;
-    }
-
-    auto GetStride() const
-    {
-		return m_stride;
-    }
-
+    const std::vector<VertexBufferElement>& GetElements() const;
+    unsigned int GetStride() const;
 private:
     std::vector<VertexBufferElement> m_elements;
-	unsigned int m_stride = 0;
+    unsigned int m_stride = 0;
 };

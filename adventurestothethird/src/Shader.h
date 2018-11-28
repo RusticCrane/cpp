@@ -8,13 +8,8 @@ class Shader
 {
 public:
     Shader(const std::string& vertexFile, const std::string& fragmentFile);
-
-    void use();
-
-    unsigned int getId()
-    {
-        return m_id;
-    }
+    void Use() const;
+	unsigned int getId() const;
 
 private:
     unsigned int m_id;

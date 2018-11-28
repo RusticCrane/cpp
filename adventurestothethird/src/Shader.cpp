@@ -14,9 +14,14 @@ Shader::Shader(const std::string& vertexFile, const std::string& fragmentFile)
     m_id = LinkProgram(vertexShader, fragmentShader);
 }
 
-void Shader::use()
+void Shader::Use() const
 {
     glUseProgram(m_id);
+}
+
+unsigned int Shader::getId() const
+{
+	return m_id;
 }
 
 std::string Shader::ReadFileContents(const std::string& path)
