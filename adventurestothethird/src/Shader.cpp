@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <glm/gtc/type_ptr.hpp>
 
 Shader::Shader(const std::string& vertexFile, const std::string& fragmentFile)
 {
@@ -19,9 +20,44 @@ void Shader::Use() const
     glUseProgram(m_id);
 }
 
-unsigned int Shader::getId() const
+void Shader::Stop() const
 {
-	return m_id;
+	glUseProgram(0);
+}
+
+void Shader::SetFloat(const std::string& name, float value)
+{
+    glUniform1f(GetUniformLocation(name), value);
+}
+
+void Shader::SetVec3(const std::string& name, const glm::vec3& vector)
+{
+    SetVec3(name, vector.x, vector.y, vector.z);
+}
+
+void Shader::SetVec3(const std::string& name, float v0, float v1, float v2)
+{
+    glUniform3f(GetUniformLocation(name), v0, v1, v2);
+}
+
+void Shader::SetMat4(const std::string& name, const glm::mat4& matrix)
+{
+    glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, glm::value_ptr(matrix));
+}
+
+int Shader::GetUniformLocation(const std::string& name)
+{
+    if (m_uniformLocations.find(name) != m_uniformLocations.end())
+    {
+        return m_uniformLocations[name];
+    }
+    int location = glGetUniformLocation(m_id, name.c_str());
+    if (location == -1)
+    {
+		std::cout << "Warning: unform '" << name << "' doesn't exist!" << std::endl;
+    }
+	m_uniformLocations.insert({ name, location });
+	return location;
 }
 
 std::string Shader::ReadFileContents(const std::string& path)

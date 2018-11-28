@@ -12,6 +12,7 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include "ChunkManager.h"
 
 int main(int argc, char** argv)
 {
@@ -35,9 +36,6 @@ int main(int argc, char** argv)
     glClearColor(0.2f, 0.1f, 0.4f, 0.0f);
 
     Shader shader("res/shaders/cube.vert.glsl", "res/shaders/cube.frag.glsl");
-    unsigned int modelLocation = glGetUniformLocation(shader.getId(), "model");
-    unsigned int viewLocation = glGetUniformLocation(shader.getId(), "view");
-    unsigned int projectionLocation = glGetUniformLocation(shader.getId(), "projection");
 
     Camera cam;
     cam.position().x = 16.0f;
@@ -48,18 +46,18 @@ int main(int argc, char** argv)
 
     shader.Use();
 
-    glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
+	shader.SetMat4("projection", projection);
 
     sf::Vector2i prevMousePos = sf::Mouse::getPosition();
 
-    Chunk chunk;
+    ChunkManager chunkManager;
 
     constexpr float arrows[] = {
         0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, // GREEN = X
         1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
         0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // RED = Y
         0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, // BLUE = Zw                                                                     dwwwww
+        0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, // BLUE = Z
         0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
     };
 
@@ -135,20 +133,17 @@ int main(int argc, char** argv)
         }
 
         shader.Use();
-        glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(cam.viewMatrix()));
-        glUniform3f(glGetUniformLocation(shader.getId(), "viewPos"), cam.position().x, cam.position().y,
-                    cam.position().z);
+		shader.SetMat4("view", cam.viewMatrix());
+		shader.SetVec3("viewPos", cam.position().x, cam.position().y, cam.position().z);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        chunk.render(shader.getId());
-
         arrowShader.Use();
         glm::mat4 mod = glm::translate(glm::mat4(1.0f), cam.center());
-		mod = glm::scale(mod, glm::vec3(0.2f));
-        glUniformMatrix4fv(glGetUniformLocation(arrowShader.getId(), "model"), 1, GL_FALSE, glm::value_ptr(mod));
-        glUniformMatrix4fv(glGetUniformLocation(arrowShader.getId(), "view"), 1, GL_FALSE, glm::value_ptr(cam.viewMatrix()));
-        glUniformMatrix4fv(glGetUniformLocation(arrowShader.getId(), "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+        mod = glm::scale(mod, glm::vec3(0.2f));
+        arrowShader.SetMat4("model", mod);
+        arrowShader.SetMat4("view", cam.viewMatrix());
+        arrowShader.SetMat4("projection", projection);
         glBindVertexArray(vao);
         glDrawArrays(GL_LINES, 0, 6);
 
