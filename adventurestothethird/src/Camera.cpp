@@ -32,6 +32,11 @@ void Camera::moveUp()
     m_position.y += SPEED;
 }
 
+glm::vec3 Camera::center()
+{
+	return m_position + m_front;
+}
+
 void Camera::moveDown()
 {
     m_position.y -= SPEED;

@@ -18,6 +18,7 @@ public:
     glm::vec3& position();
     float& yaw();
     float& pitch();
+	glm::vec3 center();
 private:
     glm::vec3 m_position;
     glm::vec3 m_right;

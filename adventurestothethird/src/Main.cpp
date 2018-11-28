@@ -54,6 +54,29 @@ int main(int argc, char** argv)
 
     Chunk chunk;
 
+    constexpr float arrows[] = {
+        0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, // GREEN = X
+        1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // RED = Y
+        0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, // BLUE = Zw                                                                     dwwwww
+        0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+    };
+
+    unsigned int vao, vbo;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(arrows), arrows, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), nullptr);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    Shader arrowShader("res/shaders/cross.vert.glsl", "res/shaders/cross.frag.glsl");
+
     sf::Clock frameTimer;
     sf::Clock fpsTimer;
     int frames = 0;
@@ -119,6 +142,15 @@ int main(int argc, char** argv)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         chunk.render(shader.getId());
+
+        arrowShader.Use();
+        glm::mat4 mod = glm::translate(glm::mat4(1.0f), cam.center());
+		mod = glm::scale(mod, glm::vec3(0.2f));
+        glUniformMatrix4fv(glGetUniformLocation(arrowShader.getId(), "model"), 1, GL_FALSE, glm::value_ptr(mod));
+        glUniformMatrix4fv(glGetUniformLocation(arrowShader.getId(), "view"), 1, GL_FALSE, glm::value_ptr(cam.viewMatrix()));
+        glUniformMatrix4fv(glGetUniformLocation(arrowShader.getId(), "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+        glBindVertexArray(vao);
+        glDrawArrays(GL_LINES, 0, 6);
 
         window.display();
     }

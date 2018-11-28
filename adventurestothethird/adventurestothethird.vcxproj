@@ -99,6 +99,8 @@
     <ClCompile Include="src\VertexBufferLayout.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="res\shaders\cross.frag.glsl" />
+    <None Include="res\shaders\cross.vert.glsl" />
     <None Include="res\shaders\cube.frag.glsl" />
     <None Include="res\shaders\cube.vert.glsl" />
   </ItemGroup>
