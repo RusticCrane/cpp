@@ -2,7 +2,7 @@
 
 #include <glad/glad.h>
 
-#include <map>
+#include <unordered_map>
 #include <string>
 
 #include <glm/glm.hpp>
@@ -24,5 +24,5 @@ private:
     std::string ReadFileContents(const std::string& path);
     unsigned int CompileShader(const char* source, GLenum type);
     unsigned int LinkProgram(unsigned int vertexShaderId, unsigned int fragmentShaderId);
-	std::map<std::string, int> m_uniformLocations;
+	std::unordered_map<std::string, int> m_uniformLocations;
 };

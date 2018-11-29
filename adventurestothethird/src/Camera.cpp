@@ -5,7 +5,7 @@
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
-#define SPEED 0.006f
+#define SPEED 0.12f
 
 Camera::Camera() : m_position(glm::vec3(0.0f)),
                    m_roll(0.0f),

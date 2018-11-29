@@ -39,18 +39,18 @@ int main(int argc, char** argv)
 
     Camera cam;
     cam.position().x = 16.0f;
-    cam.position().y = 20.0f;
+    cam.position().y = 10.0f;
     cam.position().z = 16.0f;
 
     glm::mat4 projection = glm::perspective(45.0f, 800.0f / 600.0f, 0.01f, 400.0f);
 
     shader.Use();
 
-	shader.SetMat4("projection", projection);
+    shader.SetMat4("projection", projection);
 
     sf::Vector2i prevMousePos = sf::Mouse::getPosition();
 
-    ChunkManager chunkManager;
+	ChunkManager chunkManager(cam);
 
     constexpr float arrows[] = {
         0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, // GREEN = X
@@ -81,6 +81,8 @@ int main(int argc, char** argv)
 
     while (window.isOpen())
     {
+		//std::cout << "Cam(" << cam.position().x << ", " << cam.position().y << ", " << cam.position().z << ")" << std::endl;
+
         auto time = frameTimer.restart();
 
         sf::Event event;
@@ -132,11 +134,14 @@ int main(int argc, char** argv)
             cam.moveBackwards();
         }
 
-        shader.Use();
-		shader.SetMat4("view", cam.viewMatrix());
-		shader.SetVec3("viewPos", cam.position().x, cam.position().y, cam.position().z);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        shader.Use();
+        shader.SetMat4("view", cam.viewMatrix());
+        shader.SetVec3("viewPos", cam.position().x, cam.position().y, cam.position().z);
+
+		chunkManager.Update(1.0);
+		chunkManager.Render(shader);
 
         arrowShader.Use();
         glm::mat4 mod = glm::translate(glm::mat4(1.0f), cam.center());
