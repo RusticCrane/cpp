@@ -3,13 +3,16 @@
 #include <thread>
 #include <unordered_map>
 
+#include <SFML/Window.hpp>
+
 #include "Shader.h"
 
 #include "Camera.h"
 #include <iostream>
+#include <mutex>
 //#include "Player.h"
 
-#define RENDER_DISTANCE 3
+#define RENDER_DISTANCE 7
 
 class Chunk;
 
@@ -39,12 +42,18 @@ class ChunkManager
 {
 public:
     /* Public methods */
-    ChunkManager(/*const Player& player*/ Camera& camera);
-    glm::vec3 getPosition();
+    ChunkManager(/*const Player& player*/ Camera& camera, const sf::Window& window);
+    /*
+     * Generates a chunk for the given grid coordinate (x, y, z)
+     */
+	void CreateChunk(int x, int y, int z);
     void Update(double dt);
     void Render(Shader& shader);
 
 	void UpdatingChunksThread();
+
+	void GenerateChunks();
+	void InitialiseChunkCreation();
 
 protected:
     /* Protected methods */
@@ -62,6 +71,8 @@ private:
     /* Private methods */
     //const Player& m_player;
     Camera& m_camera;
-    std::unordered_map<glm::ivec3, std::shared_ptr<Chunk>> m_chunks;
+	const sf::Window& m_window;
+    std::unordered_map<glm::ivec3, Chunk*> m_chunks;
 	std::thread m_updatingChunksThread;
+	std::mutex m_contextMutex;
 };

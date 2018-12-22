@@ -4,7 +4,67 @@
 
 #include "ChunkManager.h"
 
-Chunk::Chunk(ChunkManager& chunkManager) : m_chunkManager(chunkManager) {}
+Chunk* Chunk::GetChunkXPlus() const
+{
+    return m_chunkXPlus;
+}
+
+void Chunk::SetChunkXPlus(Chunk* chunk)
+{
+    m_chunkXPlus = chunk;
+}
+
+Chunk* Chunk::GetChunkXMinus() const
+{
+    return m_chunkXMinus;
+}
+
+void Chunk::SetChunkXMinus(Chunk* chunk)
+{
+    m_chunkXMinus = chunk;
+}
+
+Chunk* Chunk::GetChunkYPlus() const
+{
+    return m_chunkYPlus;
+}
+
+void Chunk::SetChunkYPlus(Chunk* chunk)
+{
+    m_chunkYPlus = chunk;
+}
+
+Chunk* Chunk::GetChunkYMinus() const
+{
+    return m_chunkYMinus;
+}
+
+void Chunk::SetChunkYMinus(Chunk* chunk)
+{
+    m_chunkYMinus = chunk;
+}
+
+Chunk* Chunk::GetChunkZPlus() const
+{
+    return m_chunkZPlus;
+}
+
+void Chunk::SetChunkZPlus(Chunk* chunk)
+{
+    m_chunkZPlus = chunk;
+}
+
+Chunk* Chunk::GetChunkZMinus() const
+{
+    return m_chunkZMinus;
+}
+
+void Chunk::SetChunkZMinus(Chunk* chunk)
+{
+    m_chunkZMinus = chunk;
+}
+
+Chunk::Chunk() {}
 
 void Chunk::Setup()
 {
@@ -17,8 +77,8 @@ void Chunk::Setup()
     noise.SetNoiseType(FastNoise::Perlin);
     noise.SetFrequency(0.05f);
 
-    int max = 25;
-    int min = 5;
+    int max = 14;
+    int min = 1;
 
     auto lm = [](double mi, double ma, double va) -> double
     {
@@ -33,7 +93,7 @@ void Chunk::Setup()
             {
                 SetActive(x, y, z,
                           noise.GetNoise(x + m_position.x * CHUNK_SIZE, z + m_position.z * CHUNK_SIZE) > -1.0 +
-                          lm(10, 25, y + m_position.y * CHUNK_SIZE));
+                          lm(min, max, y + m_position.y * CHUNK_SIZE));
             }
         }
     }
@@ -140,7 +200,7 @@ void Chunk::CreateMesh()
             }
         }
     }
-    m_count = vertices.size();
+	m_count = vertices.size() / 6;
 
     VertexBuffer vb(vertices.data(), vertices.size() * sizeof(float));
 
@@ -148,25 +208,24 @@ void Chunk::CreateMesh()
     layout.Push<float>(3);
     layout.Push<float>(3);
 
-	m_va = std::make_unique<VertexArray>();
+    m_va = new VertexArray;
     m_va->AddBuffer(vb, layout);
 
-	m_rebuild = false;
+    m_rebuild = false;
 }
 
 void Chunk::Render(Shader& shader)
 {
     if (m_va)
     {
-		shader.Use();
-		m_va->Bind();
-		glm::mat4 model = glm::translate(glm::mat4(1.0f),
-			glm::vec3(CHUNK_SIZE * m_position.x, CHUNK_SIZE * m_position.y,
-				CHUNK_SIZE * m_position.z));
-		shader.SetMat4("model", model);
-		glDrawArrays(GL_TRIANGLES, 0, m_count);
+        shader.Use();
+        m_va->Bind();
+        glm::mat4 model = glm::translate(glm::mat4(1.0f),
+                                         glm::vec3(CHUNK_SIZE * m_position.x, CHUNK_SIZE * m_position.y,
+                                                   CHUNK_SIZE * m_position.z));
+        shader.SetMat4("model", model);
+        glDrawArrays(GL_TRIANGLES, 0, m_count);
     }
-    
 }
 
 int Chunk::GetCount() const
@@ -186,17 +245,22 @@ void Chunk::SetActive(int x, int y, int z, bool active)
 
 void Chunk::SetPosition(int x, int y, int z)
 {
-	m_position.x = x;
-	m_position.y = y;
-	m_position.z = z;
+    m_position.x = x;
+    m_position.y = y;
+    m_position.z = z;
 }
 
 bool Chunk::NeedsRebuild()
 {
-	return m_rebuild;
+    return m_rebuild;
 }
 
 void Chunk::SetNeedsRebuild(bool rebuild)
 {
-	m_rebuild = rebuild;
+    m_rebuild = rebuild;
+}
+
+const glm::vec3& Chunk::GetGridPos() const
+{
+	return m_position;
 }

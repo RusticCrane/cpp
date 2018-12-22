@@ -1,27 +1,32 @@
+#include "pch.h"
+
 #include <glad/glad.h>
 #include <SFML/Window.hpp>
 
-#include <iostream>
+#include "OpenGLWindow.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
+std::vector<std::tuple<unsigned int, int>> cubes;
 
-#include "Shader.h"
-#include "Camera.h"
-#include "Chunk.h"
-
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-#include "ChunkManager.h"
-
+// Window pure virtual -> win32 opengl window that implements it
 int main(int argc, char** argv)
 {
+	OpenGLWindow::Init();
+	OpenGLWindow window(800, 600, "Game window");
+	while (true)
+	{
+		glClear(GL_COLOR_BUFFER_BIT);
+		window.Swap();
+
+		window.PollEvents();
+	}
+	return 0;
+#if 0
     sf::ContextSettings settings;
     settings.depthBits = 24;
     settings.stencilBits = 8;
     settings.antialiasingLevel = 4;
-    settings.majorVersion = 3;
-    settings.minorVersion = 0;
+    settings.majorVersion = 4;
+    settings.minorVersion = 5;
 
     sf::Window window(sf::VideoMode(800, 600), "SFML works!", sf::Style::Default, settings);
 
@@ -33,6 +38,8 @@ int main(int argc, char** argv)
 
     glViewport(0, 0, 800, 600);
     glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_FRONT);
     glClearColor(0.2f, 0.1f, 0.4f, 0.0f);
 
     Shader shader("res/shaders/cube.vert.glsl", "res/shaders/cube.frag.glsl");
@@ -50,7 +57,7 @@ int main(int argc, char** argv)
 
     sf::Vector2i prevMousePos = sf::Mouse::getPosition();
 
-	ChunkManager chunkManager(cam);
+	ChunkManager chunkManager(cam, window);
 
     constexpr float arrows[] = {
         0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, // GREEN = X
@@ -133,6 +140,10 @@ int main(int argc, char** argv)
         {
             cam.moveBackwards();
         }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
+        {
+			chunkManager.InitialiseChunkCreation();
+        }
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -155,4 +166,5 @@ int main(int argc, char** argv)
         window.display();
     }
     return 0;
+#endif
 }

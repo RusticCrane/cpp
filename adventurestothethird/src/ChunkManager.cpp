@@ -2,75 +2,96 @@
 
 #include "Chunk.h"
 
-ChunkManager::ChunkManager(/*const Player& player*/ Camera& camera) /*: m_player(player)*/ : m_camera(camera)
+ChunkManager::ChunkManager(Camera& camera, const sf::Window& window) : m_camera(camera), m_window(window)
 {
     m_updatingChunksThread = std::thread(&ChunkManager::UpdatingChunksThread, this);
 }
 
-glm::vec3 ChunkManager::getPosition()
+void ChunkManager::CreateChunk(int x, int y, int z)
 {
-    return m_camera.position();
+    Chunk* chunk = new Chunk();
+	chunk->SetPosition(x, y, z);
+	chunk->Setup();
+    chunk->CreateMesh();
+    m_chunks.insert({ glm::ivec3(x, y, z), chunk });
 }
 
-void ChunkManager::Update(double dt)
+void ChunkManager::GenerateChunks() { }
+
+void ChunkManager::InitialiseChunkCreation()
 {
-    glm::vec3 position = getPosition();
-    glm::vec3 currentChunk(
-        static_cast<int>(position.x / 16),
-        static_cast<int>(position.y / 16),
-        static_cast<int>(position.z / 16)
-    );
-    for (int x = -RENDER_DISTANCE + currentChunk.x; x < RENDER_DISTANCE + currentChunk.x; ++x)
-    {
-        for (int y = currentChunk.y - RENDER_DISTANCE; y < currentChunk.y + RENDER_DISTANCE; ++y)
-        {
-            if (y < 0)
-            {
-                continue;
-            }
-            for (int z = -RENDER_DISTANCE + currentChunk.z; z < RENDER_DISTANCE + currentChunk.z; ++z)
-            {
-                auto chunk = m_chunks.find(glm::vec3(x, y, z));
-                if (chunk == m_chunks.end())
-                {
-                    std::shared_ptr<Chunk> chunk = std::make_shared<Chunk>(*this);
-                    chunk.get()->SetPosition(x, y, z);
-                    chunk.get()->Setup();
-                    m_chunks.insert({ glm::ivec3(x, y, z), chunk });
-                }
-                else
-                {
-                    if (chunk->second.get()->IsSetup() && chunk->second.get()->NeedsRebuild())
-                    {
-                        chunk->second.get()->CreateMesh();
-                    }
-                }
-            }
-        }
-    }
+    CreateChunk(0, 0, 0);
 }
+
+void ChunkManager::Update(double dt) { }
 
 void ChunkManager::Render(Shader& shader)
 {
     int vertices = 0;
     for (auto& element : m_chunks)
     {
-        auto& position = element.first;
-        auto& chunk = element.second;
-        chunk.get()->Render(shader);
-        vertices += chunk.get()->GetCount();
+        auto chunk = element.second;
+        chunk->Render(shader);
+        vertices += chunk->GetCount();
     }
-    //std::cout << vertices << " drawn" << std::endl;
+    std::cout << vertices / 3 << " triangles drawn" << std::endl;
 }
 
 void ChunkManager::UpdatingChunksThread()
 {
     while (true)
     {
-        for (auto& c : m_chunks)
+        constexpr int MAX_CHUNKS_LOADED = 1;
+        std::vector<Chunk*> chunks;
+        chunks.reserve(m_chunks.size());
+        for (auto it = m_chunks.begin(); it != m_chunks.end(); ++it)
         {
-            std::shared_ptr<Chunk> chunk = c.second;
+            chunks.push_back(it->second);
         }
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+        std::vector<glm::ivec3> chunksToAdd;
+        std::vector<Chunk*> chunksToUpdate;
+        std::vector<Chunk*> chunksToRemove;
+        for (int i = 0; i < chunks.size(); ++i)
+        {
+            Chunk* chunk = chunks[i];
+            glm::vec3 chunkGridPosition = chunk->GetGridPos();
+			glm::vec3 chunkWorldPosition = chunkGridPosition * static_cast<float>(Chunk::CHUNK_SIZE);
+            chunkWorldPosition += Chunk::CHUNK_SIZE / 2;
+            glm::vec3 distanceVector = chunkWorldPosition - m_camera.position();
+            float distance = distanceVector.length();
+            if (distance > RENDER_DISTANCE)
+            {
+                chunksToRemove.push_back(chunk);
+            }
+            else
+            {
+				chunksToUpdate.push_back(chunk);
+                if (chunk->GetChunkXPlus() == nullptr)
+                {
+					glm::vec3 chunkPos = chunkWorldPosition;
+					chunkPos.x += Chunk::CHUNK_SIZE;
+					glm::vec3 dVector = chunkPos - m_camera.position();
+					float d = dVector.length();
+                    if (d <= RENDER_DISTANCE)
+                    {
+						chunksToAdd.push_back(glm::ivec3(chunkGridPosition.x + 1, chunkGridPosition.y, chunkGridPosition.z));
+                    }
+                }
+            }
+
+            
+            // Calculate distance from chunk to camera
+            // If chunk is close enough, add it to the "update list"
+            // Check if the adjacent chunks are there, else, add them to the "add list"
+            // Else add it to the "remove list"
+        }
+		for (glm::ivec3 pos : chunksToAdd)
+		{
+			m_window.setActive(true);
+			CreateChunk(pos.x, pos.y, pos.z);
+		}
+        // Loop through existing chu
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 }
